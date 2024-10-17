@@ -1,68 +1,52 @@
 import numpy as np
+from abc import ABC, abstractmethod
 
+# Classe base abstrata para os classificadores
+class BaseClassifier(ABC):
+    def __init__(self, classifier):
+        self.classifier = classifier
 
+    @abstractmethod
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        pass
+
+# Implementação para o classificador PLA
+class PLAClassifier(BaseClassifier):
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        return np.array(self.classifier.hypothesis(x))
+
+# Implementação para o classificador Logístico
+class LogisticClassifier(BaseClassifier):
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        return np.array(self.classifier.predict_classes(x))
+
+# Implementação para o classificador Linear
+class LinearClassifier(BaseClassifier):
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        return np.array(self.classifier.predict(x))
+
+# Classe para classificar os dígitos
 class DigitClassifier:
-    def __init__(self, classifier_digit_0, classifier_digit_1, classifier_digit_4, type_model="linear"):
+    def __init__(self, classifier_digit_0, classifier_digit_1, classifier_digit_4, classifier_type="Linear"):
         """
         Inicializa a classe DigitClassifier com os três classificadores.
 
         Args:
-        - classifier0: O classificador para o dígito 0.
-        - classifier1: O classificador para o dígito 1.
-        - classifier4: O classificador para o dígito 4.
+        - classifier_digit_0: O classificador para o dígito 0.
+        - classifier_digit_1: O classificador para o dígito 1.
+        - classifier_digit_4: O classificador para o dígito 4.
+        - classifier_type: Tipo de modelo a ser utilizado ("PLA", "Logistic", ou "Linear").
         """
-        self.classifier_digit_0 = classifier_digit_0
-        self.classifier_digit_1 = classifier_digit_1
-        self.classifier_digit_4 = classifier_digit_4
-        self.type_model = type_model
+        self.classifier_digit_0 = self._get_classifier(classifier_digit_0, classifier_type)
+        self.classifier_digit_1 = self._get_classifier(classifier_digit_1, classifier_type)
+        self.classifier_digit_4 = self._get_classifier(classifier_digit_4, classifier_type)
 
-    def predict_f0(self, x: np.ndarray) -> np.ndarray:
-        """
-        Prediz o dígito usando o classificador 0.
-
-        Args:
-        - x: Um array numpy com os atributos de entrada.
-
-        Returns:
-        - np.ndarray: A predição do classificador para o dígito 0.
-        """
-        if self.type_model == "PLA":
-            return np.array(self.classifier_digit_0.hypothesis(x))
-        if self.type_model == "Logistic":
-            return np.array(self.classifier_digit_0.predict_classes(x))
-        return np.array(self.classifier_digit_0.predict(x))
-
-    def predict_f1(self, x: np.ndarray) -> np.ndarray:
-        """
-        Prediz o dígito usando o classificador 1.
-
-        Args:
-        - x: Um array numpy com os atributos de entrada.
-
-        Returns:
-        - np.ndarray: A predição do classificador para o dígito 1.
-        """
-        if self.type_model == "PLA":
-            return np.array(self.classifier_digit_1.hypothesis(x))
-        if self.type_model == "Logistic":
-            return np.array(self.classifier_digit_1.predict_classes(x))
-        return np.array(self.classifier_digit_1.predict(x))
-
-    def predict_f4(self, x: np.ndarray) -> np.ndarray:
-        """
-        Prediz o dígito usando o classificador 4.
-
-        Args:
-        - x: Um array numpy com os atributos de entrada.
-
-        Returns:
-        - np.ndarray: A predição do classificador para o dígito 4.
-        """
-        if self.type_model == "PLA":
-            return np.array(self.classifier_digit_4.hypothesis(x))
-        if self.type_model == "Logistic":
-            return np.array(self.classifier_digit_4.predict_classes(x))
-        return np.array(self.classifier_digit_4.predict(x))
+    def _get_classifier(self, classifier, classifier_type):
+        if classifier_type == "PLA":
+            return PLAClassifier(classifier)
+        elif classifier_type == "Logistic":
+            return LogisticClassifier(classifier)
+        return LinearClassifier(classifier)
 
     def classify_digit(self, x: np.ndarray) -> int:
         """
@@ -74,11 +58,11 @@ class DigitClassifier:
         Returns:
         - int: O dígito classificado (0, 1, 4, ou 5).
         """
-        if self.predict_f0(x) == 1:
+        if self.classifier_digit_0.predict(x) == 1:
             return 0
-        elif self.predict_f1(x) == 1:
+        elif self.classifier_digit_1.predict(x) == 1:
             return 1
-        elif self.predict_f4(x) == 1:
+        elif self.classifier_digit_4.predict(x) == 1:
             return 4
         else:
             return 5
